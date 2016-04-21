@@ -43,8 +43,8 @@ CoreSection = sandwichModel.HomogeneousSolidSection(name='core section', materia
 
 horizotal_edges = sandwichPart.edges.findAt(((1.815, 1.0, 0.0),),
                                             ((1.815, 0.0, 0.0),),)
-vertical_edges = sandwichPart.edges.findAt(((0, 0.5, 0.0),),
-                                           ((3.63, 0.5, 0.0),),)
+left_end_edge = sandwichPart.edges.findAt(((0, 0.5, 0.0),))
+right_end_edge = sandwichPart.edges.findAt(((3.63, 0.5, 0.0),))
 
 #sandwich_face_center = (1.815, 0.5, 0.0)
 #sandwich_face = sandwichPart.faces.findAt((sandwich_face_center,))
@@ -78,7 +78,18 @@ del sandwichModel.historyOutputRequest['H-Output-1']
 
 #--------------------------------------------Apply Load--------------------------------------------------
 
+vertex_left_side_middle_coord = (0.0, 0.5, 0.0)
+vertex_right_side_middle_coord = (3.63, 0.5, 0.0)
+vertex_left_side_middle = sandwichInstance.vertices.findAt((vertex_left_side_middle_coord,))
+vertex_right_side_middle = sandwichInstance.vertices.findAt((vertex_right_side_middle_coord,))
 
+#------------------------------------------Apply Boundary-------------------------------------------------
+
+left_end_BC = sandwichModel.DisplcementBC(name='left end', createStepName='Initial', region=(left_end_edge,), u1=0.0)
+left_end_middle_BC = sandwichModel.DisplcementBC(name='left_end_middle_BC', createStepName='Initial', region=(vertex_left_side_middle,),u2=0.0)
+right_end_middle_BC = sandwichModel.DisplcementBC(name='right end middle point', createStepName='Initial', region=(vertex_right_side_middle,), u2=0.0)
+#applying displacement boundary condtion in the following line
+right_end_BC = sandwichModel.DisplcementBC(name='right end', createStepName='Initial', region=(right_end_edge,), u1=1.0)
 
 #-----------------------------------------Create Mesh----------------------------------------------------
 
@@ -89,3 +100,11 @@ elemType1 = mesh.ElemType(elemCode=CPS4, elemLibrary=STANDARD, )
 sandwichPart.seedEdgeByNumber(edges=horizotal_edges, number = 200)
 sandwichPart.seedEdgeByNumber(edges=vertical_edges, number = 40)
 sandwichPart.generateMesh()
+
+#----------------------------------------Create and run the job------------------------------------------
+import job
+mdb.Job(name='buckling analysis', model='Sandwich beam', type=ANALYSIS, description=)
+
+mdb.jobs['buckling analysis'].submit(consistencyChecking=OFF)
+
+mdb.jobs['buckling analysis'].waitForCompletion()
